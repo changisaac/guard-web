@@ -1,5 +1,7 @@
 *.pyc
 *.jpg
+*.avi
 logs/celery.log
 celerybeat-schedule
 celerybeat.pid
+*.DS_STORE
