@@ -59,11 +59,11 @@ class FrameView(APIView):
         return Response(status = 500)
     
     # example: http://127.0.0.1:8000/api/frame/
-        # {
-        #     "start_time": "20",
-        #     "car": 3,
-        #     "man": 5
-        # }
+    #     {
+    #         "start_time": "20",
+    #         "car": 3,
+    #         "man": 5
+    #     }
     def post(self, request):
         #json to frame object
         frame_serializer = FrameSerializer(data=request.data)
