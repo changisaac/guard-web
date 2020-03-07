@@ -7,6 +7,8 @@ from .serializers import FileSerializer, FrameSerializer
 from .tasks import process_file
 from api.models import Frame
 
+column_list = ['author', 'start_time', 'road_type','gps_lag', 'gps_long','car','bike','man']
+            
 class FileView(APIView):
     
     parser_classes = (MultiPartParser, FormParser)
@@ -32,7 +34,6 @@ class FrameView(APIView):
         try:
             column_names = request.GET.get('columns') #GET is from params as dict
         #frame?columns=start_time
-            column_list = ['author', 'start_time', 'road_type','gps_lag', 'gps_long','car','bike','man']
             frames = Frame.objects.all()
             #import ipdb; ipdb.set_trace()
             #for column in column_list:
@@ -40,9 +41,10 @@ class FrameView(APIView):
             #    # import ipdb; ipdb.set_trace()
             #    if column_request is not None:
             #        frames = frames.filter(column=column_request).all()
-            man = request.GET.get('man')
-            if man is not None:
-                frames = frames.filter(man=man).all()
+            man_req = request.GET.get('man')
+            # import ipdb; ipdb.set_trace()
+            if man_req is not None:
+                frames = frames.filter(man__lte=man_req).all()
                 # frames = Frame.objects.filter(man=man).all()
             else:
                 frames = Frame.objects.all()
@@ -59,16 +61,19 @@ class FrameView(APIView):
         return Response(status = 500)
     
     # example: http://127.0.0.1:8000/api/frame/
-    #     {
-    #         "start_time": "20",
-    #         "car": 3,
-    #         "man": 5
-    #     }
+        # {
+        #     "start_time": "20",
+        #     "car": 3,
+        #     "man": 5
+        # }
     def post(self, request):
-        #json to frame object
+
+        FrameSerializer.Meta.fields = tuple(column_list)
+        
         frame_serializer = FrameSerializer(data=request.data)
         if frame_serializer.is_valid():
             frame_serializer.save() # save function for frame model
             return Response(frame_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(frame_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
