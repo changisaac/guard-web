@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import FileSerializer, FrameSerializer
+from .serializers import FileSerializer, FrameSerializer, UserSerializer
 from .tasks import process_file
 from api.models import Frame
 
@@ -26,6 +26,16 @@ class FileView(APIView):
     def get(self, request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+class UserView(APIView):
+    #example: http://127.0.0.1:8000/api/data
+    def get(self, request):
+        return Response([frame.start_time for frame in Frame.objects.all()])
+    def post(self, request):
+        frames = Frame.objects.all()
+        req = {}
+        req['car'] = request.data.get('car')
+        return Response([frame.start_time for frame in Frame.objects.all()])
+
 class FrameView(APIView):
     # https://www.django-rest-framework.org/api-guide/views/
     
@@ -44,7 +54,7 @@ class FrameView(APIView):
             man_req = request.GET.get('man')
             # import ipdb; ipdb.set_trace()
             if man_req is not None:
-                frames = frames.filter(man__lte=man_req).all()
+                frames = frames.filter(man=man_req).all()
                 # frames = Frame.objects.filter(man=man).all()
             else:
                 frames = Frame.objects.all()
