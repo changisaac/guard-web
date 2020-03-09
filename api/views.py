@@ -62,6 +62,30 @@ class UserView(APIView):
                             frames = frames.filter(start_time__gt=int(req[col_name][1])).all()
                         elif req[col_name][0] is '<':
                             frames = frames.filter(start_time__lt=int(req[col_name][1])).all()
+                    if col_name is 'gps_lag':
+                        req[col_name] = req[col_name].split(',')
+                        if req[col_name][0] is '=':
+                            frames = frames.filter(gps_lag=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '<=':
+                            frames = frames.filter(gps_lag__lte=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '>=':
+                            frames = frames.filter(gps_lag__gte=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '>':
+                            frames = frames.filter(gps_lag__gt=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '<':
+                            frames = frames.filter(gps_lag__lt=int(req[col_name][1])).all()
+                    if col_name is 'gps_long':
+                        req[col_name] = req[col_name].split(',')
+                        if req[col_name][0] is '=':
+                            frames = frames.filter(gps_long=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '<=':
+                            frames = frames.filter(gps_long__lte=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '>=':
+                            frames = frames.filter(gps_long__gte=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '>':
+                            frames = frames.filter(gps_long__gt=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '<':
+                            frames = frames.filter(gps_long__lt=int(req[col_name][1])).all()
 
                     if col_name is 'man':
                         req[col_name] = req[col_name].split(',')

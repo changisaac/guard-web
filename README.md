@@ -12,7 +12,9 @@ Notes:
 "man":"=,5",
 "car":">=,8",
 "start_time":"<,21",
-"road_type":"high_way"
+"road_type":"high_way",
+"gps_lag":"=,40",
+"gps_long":"=,40"
 }
 ```
 
