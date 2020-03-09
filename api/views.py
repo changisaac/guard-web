@@ -6,6 +6,7 @@ from rest_framework import status
 from .serializers import FileSerializer, FrameSerializer, UserSerializer
 from .tasks import process_file
 from api.models import Frame
+from math import cos
 
 column_list = ['author', 'start_time', 'road_type','gps_lag', 'gps_long','car','bike','man']
             
@@ -37,20 +38,23 @@ class UserView(APIView):
             req = {}
             
             column_names = request.data.get('column_names')
+            radius = request.data.get('radius') or 5
+            #note: calculation is based on the following equations
+            # Latitude: 1 deg = 110.574 km
+            # Longitude: 1 deg = 111.320*cos(latitude) km
+            
+
             # print("column_names",column_names)
             
             for col_name in ['author', 'start_time', 'road_type','gps_lag', 'gps_long','car','bike','man']:
                 req[col_name] = request.data.get(col_name)
                 if req[col_name] is not None:
-                    
-                    # print("req[col_name]", req[col_name])
+                    print("req[col_name]", req[col_name])
                     if col_name is 'author':
                         frames = frames.filter(author=req[col_name]).all()
-
-                    if col_name is 'road_type':
+                    elif col_name is 'road_type':
                         frames = frames.filter(road_type=req[col_name]).all()
-                    
-                    if col_name is 'start_time':
+                    elif col_name is 'start_time':
                         req[col_name] = req[col_name].split(',')
                         if req[col_name][0] is '=':
                             frames = frames.filter(start_time=int(req[col_name][1])).all()
@@ -62,32 +66,14 @@ class UserView(APIView):
                             frames = frames.filter(start_time__gt=int(req[col_name][1])).all()
                         elif req[col_name][0] is '<':
                             frames = frames.filter(start_time__lt=int(req[col_name][1])).all()
-                    if col_name is 'gps_lag':
-                        req[col_name] = req[col_name].split(',')
-                        if req[col_name][0] is '=':
-                            frames = frames.filter(gps_lag=int(req[col_name][1])).all()
-                        elif req[col_name][0] is '<=':
-                            frames = frames.filter(gps_lag__lte=int(req[col_name][1])).all()
-                        elif req[col_name][0] is '>=':
-                            frames = frames.filter(gps_lag__gte=int(req[col_name][1])).all()
-                        elif req[col_name][0] is '>':
-                            frames = frames.filter(gps_lag__gt=int(req[col_name][1])).all()
-                        elif req[col_name][0] is '<':
-                            frames = frames.filter(gps_lag__lt=int(req[col_name][1])).all()
-                    if col_name is 'gps_long':
-                        req[col_name] = req[col_name].split(',')
-                        if req[col_name][0] is '=':
-                            frames = frames.filter(gps_long=int(req[col_name][1])).all()
-                        elif req[col_name][0] is '<=':
-                            frames = frames.filter(gps_long__lte=int(req[col_name][1])).all()
-                        elif req[col_name][0] is '>=':
-                            frames = frames.filter(gps_long__gte=int(req[col_name][1])).all()
-                        elif req[col_name][0] is '>':
-                            frames = frames.filter(gps_long__gt=int(req[col_name][1])).all()
-                        elif req[col_name][0] is '<':
-                            frames = frames.filter(gps_long__lt=int(req[col_name][1])).all()
-
-                    if col_name is 'man':
+                        else:
+                            return Response("Error: incorrect filter syntax", status = 400)
+                    elif col_name is 'gps_lag':
+                        frames = frames.filter(gps_lag__range=(req[col_name]-radius*0.00904,radius*0.00904+req[col_name])).all()
+                    elif col_name is 'gps_long':
+                        long_range = radius/(cos(req[col_name])*111.32)
+                        frames = frames.filter(gps_long__range=(req[col_name]-long_range,req[col_name]+long_range)).all()
+                    elif col_name is 'man':
                         req[col_name] = req[col_name].split(',')
                         if req[col_name][0] is '=':
                             frames = frames.filter(man=int(req[col_name][1])).all()
@@ -99,21 +85,25 @@ class UserView(APIView):
                             frames = frames.filter(man__gt=int(req[col_name][1])).all()
                         elif req[col_name][0] is '<':
                             frames = frames.filter(man__lt=int(req[col_name][1])).all()
-                    
-                    if col_name is 'car':
+                        else:
+                            return Response("Error: incorrect filter syntax", status = 400)
+                    elif col_name is 'car':
                         req[col_name] = req[col_name].split(',')
+                        print(req[col_name])
                         if req[col_name][0] is '=':
                             frames = frames.filter(car=int(req[col_name][1])).all()
                         elif req[col_name][0] is '<=':
                             frames = frames.filter(car__lte=int(req[col_name][1])).all()
                         elif req[col_name][0] is '>=':
+                            print("yes")
                             frames = frames.filter(car__gte=int(req[col_name][1])).all()
                         elif req[col_name][0] is '>':
                             frames = frames.filter(car__gt=int(req[col_name][1])).all()
                         elif req[col_name][0] is '<':
                             frames = frames.filter(car__lt=int(req[col_name][1])).all()
-                    
-                    if col_name is 'bike':
+                        else:
+                            return Response("Error: incorrect filter syntax", status = 400)
+                    elif col_name is 'bike':
                         req[col_name] = req[col_name].split(',')
                         if req[col_name][0] is '=':
                             frames = frames.filter(bike=int(req[col_name][1])).all()
@@ -125,6 +115,8 @@ class UserView(APIView):
                             frames = frames.filter(bike__gt=int(req[col_name][1])).all()
                         elif req[col_name][0] is '<':
                             frames = frames.filter(bike__lt=int(req[col_name][1])).all()
+                        else:
+                            return Response("Error: incorrect filter syntax", status = 400)
                     
                     # if col_name is 'man':
                     #     frames = frames.filter(man=req[col_name]).all()
