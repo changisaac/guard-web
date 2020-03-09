@@ -31,10 +31,89 @@ class UserView(APIView):
     def get(self, request):
         return Response([frame.start_time for frame in Frame.objects.all()])
     def post(self, request):
-        frames = Frame.objects.all()
-        req = {}
-        req['car'] = request.data.get('car')
-        return Response([frame.start_time for frame in Frame.objects.all()])
+
+        try:
+            frames = Frame.objects.all()
+            req = {}
+            
+            column_names = request.data.get('column_names')
+            # print("column_names",column_names)
+            
+            for col_name in ['author', 'start_time', 'road_type','gps_lag', 'gps_long','car','bike','man']:
+                req[col_name] = request.data.get(col_name)
+                if req[col_name] is not None:
+                    
+                    # print("req[col_name]", req[col_name])
+                    if col_name is 'author':
+                        frames = frames.filter(author=req[col_name]).all()
+
+                    if col_name is 'road_type':
+                        frames = frames.filter(road_type=req[col_name]).all()
+                    
+                    if col_name is 'start_time':
+                        req[col_name] = req[col_name].split(',')
+                        if req[col_name][0] is '=':
+                            frames = frames.filter(start_time=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '<=':
+                            frames = frames.filter(start_time__lte=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '>=':
+                            frames = frames.filter(start_time__gte=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '>':
+                            frames = frames.filter(start_time__gt=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '<':
+                            frames = frames.filter(start_time__lt=int(req[col_name][1])).all()
+
+                    if col_name is 'man':
+                        req[col_name] = req[col_name].split(',')
+                        if req[col_name][0] is '=':
+                            frames = frames.filter(man=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '<=':
+                            frames = frames.filter(man__lte=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '>=':
+                            frames = frames.filter(man__gte=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '>':
+                            frames = frames.filter(man__gt=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '<':
+                            frames = frames.filter(man__lt=int(req[col_name][1])).all()
+                    
+                    if col_name is 'car':
+                        req[col_name] = req[col_name].split(',')
+                        if req[col_name][0] is '=':
+                            frames = frames.filter(car=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '<=':
+                            frames = frames.filter(car__lte=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '>=':
+                            frames = frames.filter(car__gte=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '>':
+                            frames = frames.filter(car__gt=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '<':
+                            frames = frames.filter(car__lt=int(req[col_name][1])).all()
+                    
+                    if col_name is 'bike':
+                        req[col_name] = req[col_name].split(',')
+                        if req[col_name][0] is '=':
+                            frames = frames.filter(bike=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '<=':
+                            frames = frames.filter(bike__lte=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '>=':
+                            frames = frames.filter(bike__gte=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '>':
+                            frames = frames.filter(bike__gt=int(req[col_name][1])).all()
+                        elif req[col_name][0] is '<':
+                            frames = frames.filter(bike__lt=int(req[col_name][1])).all()
+                    
+                    # if col_name is 'man':
+                    #     frames = frames.filter(man=req[col_name]).all()
+                    
+            
+            
+            print("tup:",tuple(column_names.split(',')))
+            UserSerializer.Meta.fields = tuple(column_names.split(','))
+            serializer = UserSerializer(frames, many=True)
+            return Response(serializer.data)
+        except:
+            pass
+        return Response("error", status = 500)
 
 class FrameView(APIView):
     # https://www.django-rest-framework.org/api-guide/views/
@@ -68,7 +147,7 @@ class FrameView(APIView):
        #for query: https://docs.djangoproject.com/en/3.0/topics/db/queries/
         # start_times = [frame.start_time for frame in Frame.objects.all()]
         # return Response(start_times)
-        return Response(status = 500)
+        return Response("error", status = 500)
     
     # example: http://127.0.0.1:8000/api/frame/
         # {
