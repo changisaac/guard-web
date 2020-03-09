@@ -13,8 +13,8 @@ Notes:
 "car":">,8",
 "start_time":"<,21",
 "road_type":"high_way",
-"radius":1
-"gps_lag":40
+"radius":1,
+"gps_lag":40,
 "gps_long":30
 }
 ```
